@@ -5,9 +5,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { FixedSizeList as List } from 'react-window';
 // import {InfiniteLoader, List, WindowScroller, AutoSizer} from 'react-virtualized';
-import InfiniteLoader from 'react-window-infinite-loader';
 // import { WindowScroller, AutoSizer } from "react-virtualized";
 import MovieCard from '../containers/MovieCard';
+
+import Button from '@material-ui/core/Button';
 
 const ITEM_WIDTH = 400;
 const ITEM_HEIGHT = 360;
@@ -63,7 +64,6 @@ const RowItem = React.memo(function RowItem({movieId, classes}) {
 
 
 class InfiniteMoviesList extends React.PureComponent {
-  infiniteLoaderRef = React.createRef();
 
   loadMoreItems = () => {
     if (!this.props.isFetching) {
@@ -77,9 +77,15 @@ class InfiniteMoviesList extends React.PureComponent {
     </Grid>
   );
 
+  componentDidMount() {
+    this.loadMoreItems();
+  }
+
   componentDidUpdate(prevProps) {
-    if (!prevProps.reset && this.props.reset && this.infiniteLoaderRef.current) {
-      this.infiniteLoaderRef.current.resetloadMoreItemsCache(true);
+    const { hasMore, movies : prevMovies } = prevProps;
+    const { movies } = this.props;
+    if(hasMore && prevMovies.length === 0 && movies.length === 0) {
+      this.loadMoreItems();
     }
   }
 
@@ -89,6 +95,19 @@ class InfiniteMoviesList extends React.PureComponent {
     const height = window.innerHeight;
     const {movies, hasMore} = this.props;
     const rowCount = getRowsAmount(width, movies.length, hasMore);
+    const loadMoreButton = (
+      hasMore ?
+      <Button
+        className={classes.button}
+        variant="contained"
+        color="primary"
+        onClick={this.loadMoreItems}
+        style={{marginBottom: '10px'}}
+        fullWidth >
+        Load More
+      </Button> : null
+    );
+
     const rowRenderer = ({index, style}) => {
       const {movies, classes} = this.props;
       const maxItemsPerRow = getMaxItemsAmountPerRow(width);
@@ -104,37 +123,20 @@ class InfiniteMoviesList extends React.PureComponent {
     };
 
     return (
-              <InfiniteLoader
-                ref={this.infiniteLoaderRef}
-                itemCount={rowCount}
-                isItemLoaded={({index}) => {
-                  const {hasMore, movies} = this.props;
-                  const maxItemsPerRow = getMaxItemsAmountPerRow(width);
-                  const allItemsLoaded = generateIndexesForRow(index, maxItemsPerRow, movies.length).length > 0;
-
-                  return !hasMore || allItemsLoaded;
-                }}
-                loadMoreItems={this.loadMoreItems}
-              >
-                {({onItemsRendered, ref}) => (
-                  <section>
-                      <List
-                        className={classes.grid}
-                        ref={ref}
-                        height={height}
-                        width={width}
-                        itemCount={rowCount}
-                        itemSize={ITEM_HEIGHT}
-                        onItemsRendered={onItemsRendered}
-                        noItemsRenderer={this.noItemsRenderer}
-                      >
-                      {rowRenderer}
-                      </List>
-                    </section>
-                )}
-              </InfiniteLoader>
-       );
-    }
+      <React.Fragment>
+        <List
+          className={classes.grid}
+          height={height}
+          width={width}
+          itemCount={rowCount}
+          itemSize={ITEM_HEIGHT}
+        >
+          {rowRenderer}
+        </List>
+        {loadMoreButton}
+      </React.Fragment>
+    );
+  }
 };
 
 InfiniteMoviesList.defaultProps = {
