@@ -42,7 +42,7 @@ async function handleApiCall(url) {
 
 export function getPopularMovies(page = 1) {
   const url = generateUrl('movie/popular', {page});
-  console.log('anton: [api] URL==== ', url);
+  
   return handleApiCall(url);
 }
 
@@ -66,8 +66,11 @@ export function getGenresListForMovies() {
 
 export function searchMovies(query, page = 1) {
   const url = generateUrl('search/movie', {query, page});
-
-  return handleApiCall(url);
+  if (query.trim()) {
+    return handleApiCall(url);
+  } else {
+    return null;
+  }
 }
 
 export function getMoviePosterImageUrl(movie) {

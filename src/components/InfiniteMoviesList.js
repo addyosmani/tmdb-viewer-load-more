@@ -70,10 +70,14 @@ class InfiniteMoviesList extends PureComponent {
   
   loadMoreItems = async () => {
     if (!this.props.isFetching) {
-      await this.props.fetchMovies();
-      const { movies, hasMore } = this.props;
-      const rowCount = getRowsAmount(this._listWidth, movies.length, hasMore);
-      this._listRef.current.scrollToItem(rowCount, "center");
+      try {
+        await this.props.fetchMovies();
+        const { movies, hasMore } = this.props;
+        const rowCount = getRowsAmount(this._listWidth, movies.length, hasMore);
+        this._listRef.current.scrollToItem(rowCount, "center");
+      } catch(e) {
+        console.log(e);
+      }
     }
   };
   
@@ -88,8 +92,8 @@ class InfiniteMoviesList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { hasMore, movies : prevMovies } = prevProps;
-    const { movies } = this.props;
+    const { movies: prevMovies } = prevProps;
+    const { movies, hasMore } = this.props;
     if(hasMore && prevMovies.length === 0 && movies.length === 0) {
       this.loadMoreItems();
     }
