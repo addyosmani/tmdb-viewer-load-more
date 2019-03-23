@@ -61,6 +61,12 @@ const RowItem = React.memo(function RowItem({movieId, classes}) {
 });
 
 class InfiniteMoviesList extends PureComponent {
+
+  state = {
+    showLoadMore: false,
+    listRows: 0
+  }
+
   constructor(props) {
     super(props);
     this._listWidth = 0.85 * window.innerWidth;
@@ -72,8 +78,8 @@ class InfiniteMoviesList extends PureComponent {
     if (!this.props.isFetching) {
       try {
         await this.props.fetchMovies();
-        const { movies, hasMore } = this.props;
-        const rowCount = getRowsAmount(this._listWidth, movies.length, hasMore);
+        const { movies } = this.props;
+        const rowCount = getRowsAmount(this._listWidth, movies.length);
         this._listRef.current.scrollToItem(rowCount, "center");
       } catch(e) {
         console.log(e);
@@ -87,6 +93,16 @@ class InfiniteMoviesList extends PureComponent {
     </Grid>
   );
 
+  _onItemsRendered = (param) => {
+    if(param.visibleStopIndex === this.state.listRows - 1) {
+      this.setState({showLoadMore: true});
+    } else {
+      if(this.state.showLoadMore) {
+        this.setState({showLoadMore: false});
+      }
+    }
+  }
+
   componentDidMount() {
     this.loadMoreItems();
   }
@@ -97,12 +113,16 @@ class InfiniteMoviesList extends PureComponent {
     if(hasMore && prevMovies.length === 0 && movies.length === 0) {
       this.loadMoreItems();
     }
+    const rowsCount = getRowsAmount(this._listWidth, movies.length);
+    if (this.state.listRows !== rowsCount) {
+      this.setState({listRows: rowsCount}); 
+    }
   }
 
   render() {
     const { classes, movies, hasMore } = this.props;
 
-    const rowCount = getRowsAmount(this._listWidth, movies.length, hasMore);
+    const rowCount = getRowsAmount(this._listWidth, movies.length);
     const loadMoreButton = (
       <Button
         className={classes.button}
@@ -135,10 +155,11 @@ class InfiniteMoviesList extends PureComponent {
           height={this._listHeight}
           width={this._listWidth}
           itemCount={rowCount}
-          itemSize={ITEM_HEIGHT}>
+          itemSize={ITEM_HEIGHT}
+          onItemsRendered={this._onItemsRendered}>
           {rowRenderer}
         </List>
-        {hasMore && loadMoreButton}
+        {hasMore && this.state.showLoadMore && loadMoreButton}
       </Fragment>
     );
   }

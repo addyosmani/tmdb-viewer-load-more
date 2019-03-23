@@ -7,19 +7,6 @@ function getDisplayName(Component) {
 
 export function withDataAutoload(WrappedComponent) {
   class WithDataAutoload extends React.Component {
-    componentDidMount() {
-      // console.log('dav : test [hoc/componentDidMount], props => ', this.props);
-      // this.props.loadData();
-    }
-
-    componentDidUpdate(prevProps) {
-      if (this.props.shouldReloadDataAfterUpdate && this.props.shouldReloadDataAfterUpdate(prevProps, this.props)) {
-        // anton test added <
-        console.log('dav : test [hoc/******componentDidUpdate], prevProps => ', prevProps);
-        // this.props.loadData();
-        // anton test added >
-      }
-    }
 
     render() {
       const {loadData, shouldReloadDataAfterUpdate, ...otherProps} = this.props;
