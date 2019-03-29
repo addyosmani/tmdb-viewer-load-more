@@ -66,7 +66,7 @@ class MoviesList extends PureComponent {
   }
 
   render() {
-    const { classes, movies, _onItemsRendered, hasMore } = this.props;
+    const { classes, movies, _onItemsRendered } = this.props;
 
     const rowCount = getRowsAmount(this._listWidth, movies.length);
     const rowRenderer = ({ index, style }) => {
